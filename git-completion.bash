@@ -53,7 +53,7 @@ __gitdir ()
 		elif [ -d .git ]; then
 			echo .git
 		else
-			git rev-parse --git-dir 2>/dev/null
+			\git rev-parse --git-dir 2>/dev/null
 		fi
 	elif [ -d "$1/.git" ]; then
 		echo "$1/.git"
@@ -64,7 +64,7 @@ __gitdir ()
 
 __git_ps1 ()
 {
-	local b="$(git symbolic-ref HEAD 2>/dev/null)"
+	local b="$(\git symbolic-ref HEAD 2>/dev/null)"
 	if [ -n "$b" ]; then
 		if [ -n "$1" ]; then
 			printf "$1" "${b##refs/heads/}"
@@ -97,7 +97,7 @@ __git_heads ()
 {
 	local cmd i is_hash=y dir="$(__gitdir "$1")"
 	if [ -d "$dir" ]; then
-		for i in $(git --git-dir="$dir" \
+		for i in $(\git --git-dir="$dir" \
 			for-each-ref --format='%(refname)' \
 			refs/heads ); do
 			echo "${i#refs/heads/}"
@@ -118,7 +118,7 @@ __git_tags ()
 {
 	local cmd i is_hash=y dir="$(__gitdir "$1")"
 	if [ -d "$dir" ]; then
-		for i in $(git --git-dir="$dir" \
+		for i in $(\git --git-dir="$dir" \
 			for-each-ref --format='%(refname)' \
 			refs/tags ); do
 			echo "${i#refs/tags/}"
@@ -140,7 +140,7 @@ __git_refs ()
 	local cmd i is_hash=y dir="$(__gitdir "$1")"
 	if [ -d "$dir" ]; then
 		if [ -e "$dir/HEAD" ]; then echo HEAD; fi
-		for i in $(git --git-dir="$dir" \
+		for i in $(\git --git-dir="$dir" \
 			for-each-ref --format='%(refname)' \
 			refs/tags refs/heads refs/remotes); do
 			case "$i" in
@@ -198,7 +198,7 @@ __git_remotes ()
 		echo ${i#$d/remotes/}
 	done
 	[ "$ngoff" ] && shopt -u nullglob
-	for i in $(git --git-dir="$d" config --list); do
+	for i in $(\git --git-dir="$d" config --list); do
 		case "$i" in
 		remote.*.url=*)
 			i="${i#remote.}"
@@ -219,7 +219,7 @@ __git_merge_strategies ()
 		s/'//
 		p
 		q
-		}" "$(git --exec-path)/git-merge"
+		}" "$(\git --exec-path)/git-merge"
 }
 __git_merge_strategylist=
 __git_merge_strategylist="$(__git_merge_strategies 2>/dev/null)"
@@ -243,7 +243,7 @@ __git_complete_file ()
 			;;
 	    esac
 		COMPREPLY=($(compgen -P "$pfx" \
-			-W "$(git --git-dir="$(__gitdir)" ls-tree "$ls" \
+			-W "$(\git --git-dir="$(__gitdir)" ls-tree "$ls" \
 				| sed '/^100... blob /s,^.*	,,
 				       /^040000 tree /{
 				           s,^.*	,,
@@ -288,7 +288,7 @@ __git_commands ()
 		return
 	fi
 	local i IFS=" "$'\n'
-	for i in $(git help -a|egrep '^ ')
+	for i in $(\git help -a|egrep '^ ')
 	do
 		case $i in
 		*--*)             : helper pattern;;
@@ -366,7 +366,7 @@ __git_commandlist="$(__git_commands 2>/dev/null)"
 __git_aliases ()
 {
 	local i IFS=$'\n'
-	for i in $(git --git-dir="$(__gitdir)" config --list); do
+	for i in $(\git --git-dir="$(__gitdir)" config --list); do
 		case "$i" in
 		alias.*)
 			i="${i#alias.}"
@@ -378,7 +378,7 @@ __git_aliases ()
 
 __git_aliased_command ()
 {
-	local word cmdline=$(git --git-dir="$(__gitdir)" \
+	local word cmdline=$(\git --git-dir="$(__gitdir)" \
 		config --get "alias.$1")
 	for word in $cmdline; do
 		if [ "${word##-*}" ]; then
@@ -481,7 +481,7 @@ _git_bundle ()
 {
 	local mycword="$COMP_CWORD"
 	case "${COMP_WORDS[0]}" in
-	git)
+	\git)
 		local cmd="${COMP_WORDS[2]}"
 		mycword="$((mycword-1))"
 		;;
@@ -580,7 +580,7 @@ _git_fetch ()
 	git-fetch*,1)
 		__gitcomp "$(__git_remotes)"
 		;;
-	git,2)
+	\git,2)
 		__gitcomp "$(__git_remotes)"
 		;;
 	*)
@@ -592,7 +592,7 @@ _git_fetch ()
 			local remote
 			case "${COMP_WORDS[0]}" in
 			git-fetch) remote="${COMP_WORDS[1]}" ;;
-			git)       remote="${COMP_WORDS[2]}" ;;
+			\git)       remote="${COMP_WORDS[2]}" ;;
 			esac
 			__gitcomp "$(__git_refs2 "$remote")"
 			;;
@@ -721,14 +721,14 @@ _git_pull ()
 	git-pull*,1)
 		__gitcomp "$(__git_remotes)"
 		;;
-	git,2)
+	\git,2)
 		__gitcomp "$(__git_remotes)"
 		;;
 	*)
 		local remote
 		case "${COMP_WORDS[0]}" in
 		git-pull)  remote="${COMP_WORDS[1]}" ;;
-		git)       remote="${COMP_WORDS[2]}" ;;
+		\git)       remote="${COMP_WORDS[2]}" ;;
 		esac
 		__gitcomp "$(__git_refs "$remote")"
 		;;
@@ -743,7 +743,7 @@ _git_push ()
 	git-push*,1)
 		__gitcomp "$(__git_remotes)"
 		;;
-	git,2)
+	\git,2)
 		__gitcomp "$(__git_remotes)"
 		;;
 	*)
@@ -752,7 +752,7 @@ _git_push ()
 			local remote
 			case "${COMP_WORDS[0]}" in
 			git-push)  remote="${COMP_WORDS[1]}" ;;
-			git)       remote="${COMP_WORDS[2]}" ;;
+			\git)       remote="${COMP_WORDS[2]}" ;;
 			esac
 			__gitcomp "$(__git_refs "$remote")" "" "${cur#*:}"
 			;;
@@ -813,7 +813,7 @@ _git_config ()
 	remote.*.push)
 		local remote="${prv#remote.}"
 		remote="${remote%.push}"
-		__gitcomp "$(git --git-dir="$(__gitdir)" \
+		__gitcomp "$(\git --git-dir="$(__gitdir)" \
 			for-each-ref --format='%(refname):%(refname)' \
 			refs/heads)"
 		return
@@ -986,7 +986,7 @@ _git_remote ()
 		;;
 	update)
 		local i c='' IFS=$'\n'
-		for i in $(git --git-dir="$(__gitdir)" config --list); do
+		for i in $(\git --git-dir="$(__gitdir)" config --list); do
 			case "$i" in
 			remotes.*)
 				i="${i#remotes.}"
